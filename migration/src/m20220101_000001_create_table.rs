@@ -1,4 +1,5 @@
-use sea_orm_migration::{prelude::*, schema::*};
+use sea_orm::{Statement, ConnectionTrait};
+use sea_orm_migration::{prelude::*, sea_query::Expr};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -6,36 +7,44 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // Replace the sample below with your own migration scripts
-        todo!();
-
         manager
             .create_table(
                 Table::create()
-                    .table(Post::Table)
+                    .table(producto::Table)
                     .if_not_exists()
-                    .col(pk_auto(Post::Id))
-                    .col(string(Post::Title))
-                    .col(string(Post::Text))
+                    .col(
+                        ColumnDef::new(producto::id)
+                            .integer()
+                            .not_null()
+                            .auto_increment()
+                            .primary_key(),
+                    )
+                    .col(ColumnDef::new(producto::nombre).string().not_null())
+                    .col(ColumnDef::new(producto::precio).integer().not_null())
+                    .col(ColumnDef::new(producto::stock).integer().not_null())
+                    .col(
+                        ColumnDef::new(producto::creado_el)
+                            .timestamp()
+                            .default(Expr::current_timestamp()),
+                    )
                     .to_owned(),
             )
             .await
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        // Replace the sample below with your own migration scripts
-        todo!();
-
         manager
-            .drop_table(Table::drop().table(Post::Table).to_owned())
+            .drop_table(Table::drop().table(producto::Table).to_owned())
             .await
     }
 }
 
-#[derive(DeriveIden)]
-enum Post {
+#[derive(Iden)]
+enum producto {
     Table,
-    Id,
-    Title,
-    Text,
+    id,
+    nombre,
+    precio,
+    stock,
+    creado_el,
 }
